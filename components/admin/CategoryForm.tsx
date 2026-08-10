@@ -45,7 +45,7 @@ export default function CategoryForm({ initial, mode }: Props) {
     setError('')
     setSaving(true)
     try {
-      const url  = mode === 'create' ? '/api/categories' : `/api/categories/${(initial as any)._id}`
+      const url = mode === 'create' ? '/api/categories' : `/api/categories/${(initial as any)._id}`
       const method = mode === 'create' ? 'POST' : 'PUT'
       const res = await fetch(url, {
         method,
@@ -125,7 +125,7 @@ export default function CategoryForm({ initial, mode }: Props) {
         ) : (
           <UploadButton
             endpoint="imageUploader"
-            onClientUploadComplete={res => { if (res[0]) set('image', res[0].ufsUrl) }}
+            onClientUploadComplete={res => { if (res[0]) set('image', res[0].url) }}
             onUploadError={err => alert(`Upload failed: ${err.message}`)}
             appearance={{
               button: 'bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ut-uploading:opacity-60',

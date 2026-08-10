@@ -6,8 +6,8 @@ import { Loader2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { UploadButton } from '@/lib/uploadthing'
 
 interface ColorEntry { name: string; hex: string; images: string[] }
-interface SizeEntry  { label: string; available: boolean; measurements: { chest: string; waist: string; hips: string; length: string } }
-interface FAQEntry   { question: string; answer: string }
+interface SizeEntry { label: string; available: boolean; measurements: { chest: string; waist: string; hips: string; length: string } }
+interface FAQEntry { question: string; answer: string }
 
 interface FormData {
   name: string; slug: string; sku: string; price: number; originalPrice: number | ''; collection: string
@@ -21,12 +21,12 @@ interface FormData {
 }
 
 const DEFAULT_SIZES: SizeEntry[] = [
-  { label: 'XS',  available: true, measurements: { chest: '82–86', waist: '66–70', hips: '90–94',   length: '135' } },
-  { label: 'S',   available: true, measurements: { chest: '86–90', waist: '70–74', hips: '94–98',   length: '137' } },
-  { label: 'M',   available: true, measurements: { chest: '90–94', waist: '74–78', hips: '98–102',  length: '139' } },
-  { label: 'L',   available: true, measurements: { chest: '94–98', waist: '78–82', hips: '102–106', length: '141' } },
-  { label: 'XL',  available: true, measurements: { chest: '98–102', waist: '82–86', hips: '106–110', length: '143' } },
-  { label: 'XXL', available: false,measurements: { chest: '102–106', waist: '86–90', hips: '110–114', length: '145' } },
+  { label: 'XS', available: true, measurements: { chest: '82–86', waist: '66–70', hips: '90–94', length: '135' } },
+  { label: 'S', available: true, measurements: { chest: '86–90', waist: '70–74', hips: '94–98', length: '137' } },
+  { label: 'M', available: true, measurements: { chest: '90–94', waist: '74–78', hips: '98–102', length: '139' } },
+  { label: 'L', available: true, measurements: { chest: '94–98', waist: '78–82', hips: '102–106', length: '141' } },
+  { label: 'XL', available: true, measurements: { chest: '98–102', waist: '82–86', hips: '106–110', length: '143' } },
+  { label: 'XXL', available: false, measurements: { chest: '102–106', waist: '86–90', hips: '110–114', length: '145' } },
 ]
 
 function toSlug(s: string) {
@@ -140,9 +140,8 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         {TABS.map((t, i) => (
           <button
             key={t} type="button" onClick={() => setTab(i)}
-            className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              tab === i ? 'border-yellow-500 text-yellow-600 bg-yellow-50/50' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${tab === i ? 'border-yellow-500 text-yellow-600 bg-yellow-50/50' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             {t}
           </button>
@@ -273,13 +272,13 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className={lbl}>Name</label>
-                    <input className={inp} value={color.name} onChange={e => { const c = [...form.colors]; c[ci] = {...c[ci], name: e.target.value}; setF('colors', c) }} placeholder="Black" />
+                    <input className={inp} value={color.name} onChange={e => { const c = [...form.colors]; c[ci] = { ...c[ci], name: e.target.value }; setF('colors', c) }} placeholder="Black" />
                   </div>
                   <div>
                     <label className={lbl}>Hex Color</label>
                     <div className="flex gap-2">
-                      <input type="color" value={color.hex} onChange={e => { const c = [...form.colors]; c[ci] = {...c[ci], hex: e.target.value}; setF('colors', c) }} className="w-10 h-9 rounded border border-gray-200 cursor-pointer" />
-                      <input className={`${inp} flex-1`} value={color.hex} onChange={e => { const c = [...form.colors]; c[ci] = {...c[ci], hex: e.target.value}; setF('colors', c) }} />
+                      <input type="color" value={color.hex} onChange={e => { const c = [...form.colors]; c[ci] = { ...c[ci], hex: e.target.value }; setF('colors', c) }} className="w-10 h-9 rounded border border-gray-200 cursor-pointer" />
+                      <input className={`${inp} flex-1`} value={color.hex} onChange={e => { const c = [...form.colors]; c[ci] = { ...c[ci], hex: e.target.value }; setF('colors', c) }} />
                     </div>
                   </div>
                 </div>
@@ -304,7 +303,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                     endpoint="imageUploader"
                     onClientUploadComplete={res => {
                       const c = [...form.colors]
-                      const newUrls = res.map(r => r.ufsUrl)
+                      const newUrls = res.map(r => r.url)
                       c[ci].images = [...c[ci].images.filter(Boolean), ...newUrls]
                       setF('colors', c)
                     }}
@@ -331,11 +330,11 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             </div>
             {form.sizes.map((size, si) => (
               <div key={si} className="grid grid-cols-6 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
-                <input className={`${inp} text-center font-medium`} value={size.label} onChange={e => { const s = [...form.sizes]; s[si] = {...s[si], label: e.target.value}; setF('sizes', s) }} />
+                <input className={`${inp} text-center font-medium`} value={size.label} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
                 <div className="flex justify-center">
-                  <input type="checkbox" checked={size.available} onChange={e => { const s = [...form.sizes]; s[si] = {...s[si], available: e.target.checked}; setF('sizes', s) }} className="w-4 h-4 text-yellow-500 rounded border-gray-300" />
+                  <input type="checkbox" checked={size.available} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], available: e.target.checked }; setF('sizes', s) }} className="w-4 h-4 text-yellow-500 rounded border-gray-300" />
                 </div>
-                {(['chest','waist','hips','length'] as const).map(field => (
+                {(['chest', 'waist', 'hips', 'length'] as const).map(field => (
                   <input key={field} className={inp} value={size.measurements[field]} placeholder="e.g. 90–94" onChange={e => { const s = [...form.sizes]; s[si].measurements[field] = e.target.value; setF('sizes', s) }} />
                 ))}
               </div>
@@ -349,9 +348,9 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         {/* Tab 3: Description */}
         {tab === 3 && (
           <div className="space-y-4">
-            {(['overview','fabricDetails','stylingRecommendations','careInstructions'] as const).map(k => (
+            {(['overview', 'fabricDetails', 'stylingRecommendations', 'careInstructions'] as const).map(k => (
               <div key={k}>
-                <label className={lbl}>{k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</label>
+                <label className={lbl}>{k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</label>
                 <textarea className={`${inp} resize-none`} rows={5} value={form.description[k]} onChange={e => setNested('description', k, e.target.value)} />
               </div>
             ))}
@@ -364,9 +363,9 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Fabric Information</h3>
               <div className="grid grid-cols-2 gap-3">
-                {(['type','softness','weight','season','care','origin'] as const).map(k => (
+                {(['type', 'softness', 'weight', 'season', 'care', 'origin'] as const).map(k => (
                   <div key={k}>
-                    <label className={lbl}>{k.charAt(0).toUpperCase()+k.slice(1)}</label>
+                    <label className={lbl}>{k.charAt(0).toUpperCase() + k.slice(1)}</label>
                     <input className={inp} value={form.fabricInfo[k]} onChange={e => setNested('fabricInfo', k, e.target.value)} placeholder={k === 'type' ? 'Premium Nida Crepe' : ''} />
                   </div>
                 ))}
@@ -377,25 +376,25 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
               <div className="space-y-3">
                 <div>
                   <label className={lbl}>Estimated Days</label>
-                  <input className={inp} value={form.deliveryInfo.estimatedDays} onChange={e => setNested('deliveryInfo','estimatedDays',e.target.value)} placeholder="3–5 Business Days" />
+                  <input className={inp} value={form.deliveryInfo.estimatedDays} onChange={e => setNested('deliveryInfo', 'estimatedDays', e.target.value)} placeholder="3–5 Business Days" />
                 </div>
                 <div>
                   <label className={lbl}>Delivery Regions (one per line)</label>
-                  <textarea className={`${inp} resize-none`} rows={3} value={form.deliveryInfo.regions} onChange={e => setNested('deliveryInfo','regions',e.target.value)} />
+                  <textarea className={`${inp} resize-none`} rows={3} value={form.deliveryInfo.regions} onChange={e => setNested('deliveryInfo', 'regions', e.target.value)} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={lbl}>Return Policy</label>
-                    <input className={inp} value={form.deliveryInfo.returnPolicy} onChange={e => setNested('deliveryInfo','returnPolicy',e.target.value)} />
+                    <input className={inp} value={form.deliveryInfo.returnPolicy} onChange={e => setNested('deliveryInfo', 'returnPolicy', e.target.value)} />
                   </div>
                   <div>
                     <label className={lbl}>Exchange Policy</label>
-                    <input className={inp} value={form.deliveryInfo.exchangePolicy} onChange={e => setNested('deliveryInfo','exchangePolicy',e.target.value)} />
+                    <input className={inp} value={form.deliveryInfo.exchangePolicy} onChange={e => setNested('deliveryInfo', 'exchangePolicy', e.target.value)} />
                   </div>
                 </div>
                 <div>
                   <label className={lbl}>Free Shipping Threshold (PKR)</label>
-                  <input className={inp} type="number" value={form.deliveryInfo.freeShippingThreshold} onChange={e => setNested('deliveryInfo','freeShippingThreshold',e.target.value)} placeholder="5000" />
+                  <input className={inp} type="number" value={form.deliveryInfo.freeShippingThreshold} onChange={e => setNested('deliveryInfo', 'freeShippingThreshold', e.target.value)} placeholder="5000" />
                 </div>
               </div>
             </div>
@@ -408,20 +407,20 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             {form.faqs.map((faq, fi) => (
               <div key={fi} className="border border-gray-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-500">FAQ {fi+1}</span>
-                  <button type="button" onClick={() => setF('faqs', form.faqs.filter((_,i)=>i!==fi))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
+                  <span className="text-xs font-semibold text-gray-500">FAQ {fi + 1}</span>
+                  <button type="button" onClick={() => setF('faqs', form.faqs.filter((_, i) => i !== fi))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
                 </div>
                 <div>
                   <label className={lbl}>Question</label>
-                  <input className={inp} value={faq.question} onChange={e => { const f=[...form.faqs]; f[fi]={...f[fi],question:e.target.value}; setF('faqs',f) }} />
+                  <input className={inp} value={faq.question} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], question: e.target.value }; setF('faqs', f) }} />
                 </div>
                 <div>
                   <label className={lbl}>Answer</label>
-                  <textarea className={`${inp} resize-none`} rows={3} value={faq.answer} onChange={e => { const f=[...form.faqs]; f[fi]={...f[fi],answer:e.target.value}; setF('faqs',f) }} />
+                  <textarea className={`${inp} resize-none`} rows={3} value={faq.answer} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], answer: e.target.value }; setF('faqs', f) }} />
                 </div>
               </div>
             ))}
-            <button type="button" onClick={() => setF('faqs',[...form.faqs,{question:'',answer:''}])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-yellow-600 border border-dashed border-gray-300 hover:border-yellow-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
+            <button type="button" onClick={() => setF('faqs', [...form.faqs, { question: '', answer: '' }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-yellow-600 border border-dashed border-gray-300 hover:border-yellow-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
               <Plus size={14} /> Add FAQ
             </button>
           </div>
@@ -439,7 +438,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         </button>
         <div className="ml-auto flex gap-2">
           {TABS.map((t, i) => (
-            <button key={i} type="button" onClick={() => setTab(i)} className={`w-2 h-2 rounded-full transition-colors ${i===tab ? 'bg-yellow-500' : 'bg-gray-300 hover:bg-gray-400'}`} />
+            <button key={i} type="button" onClick={() => setTab(i)} className={`w-2 h-2 rounded-full transition-colors ${i === tab ? 'bg-yellow-500' : 'bg-gray-300 hover:bg-gray-400'}`} />
           ))}
         </div>
       </div>
