@@ -1,0 +1,11 @@
+// Placeholder
+export default function WhatsAppCTA({ settings }: any) {
+    return (
+        <section className="py-20 bg-gradient-to-r from-blush to-rosegold text-white">
+            <div className="container mx-auto text-center">
+                <h2 className="font-serif text-4xl mb-4">Order via WhatsApp</h2>
+                <a href={`https://wa.me/${settings?.whatsappNumber || '923347573726'}`} className="btn-whatsapp inline-flex">Message Us</a>
+            </div>
+        </section>
+    )
+}

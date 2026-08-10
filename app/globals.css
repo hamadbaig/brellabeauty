@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rosegold: #d95138;
+  --rosegold-light: #f7b39d;
+  --rosegold-dark: #b43d28;
+  --blush: #f83d6f;
+  --blush-light: #ffa3b8;
+  --pearl: #faf9f7;
+  --pearl-dark: #f5f3f0;
+  --mauve-border: #e5dade;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5a444f;
+  --text-muted: #9e7d8b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--pearl);
+  color: var(--text-primary);
+  font-family: var(--font-montserrat), 'Montserrat', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Luxury scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--pearl-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(249, 61, 111, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blush);
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(249, 61, 111, 0.15);
+  color: #1a1a1a;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--blush);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@layer components {
+  /* Beauty heading */
+  .heading-beauty {
+    @apply font-serif text-mauve-900 tracking-wide;
+    font-feature-settings: "liga" 1, "kern" 1;
+  }
+
+  /* Blush label/tag */
+  .label-blush {
+    @apply text-xs tracking-beauty uppercase font-sans text-blush-600 font-medium;
+  }
+
+  /* Divider */
+  .divider-beauty {
+    @apply border-t border-mauve-200 my-8;
+  }
+
+  /* Blush button */
+  .btn-blush {
+    @apply bg-blush text-white font-sans text-sm tracking-widest uppercase px-8 py-4
+           hover:bg-blush-600 transition-all duration-300 cursor-pointer shadow-beauty hover:shadow-beauty-lg;
+  }
+
+  /* Rose gold button */
+  .btn-rosegold {
+    @apply bg-rosegold text-white font-sans text-sm tracking-widest uppercase px-8 py-4
+           hover:bg-rosegold-600 transition-all duration-300 cursor-pointer;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply border-2 border-blush text-blush font-sans text-sm tracking-widest uppercase px-8 py-4
+           hover:bg-blush hover:text-white transition-all duration-300 cursor-pointer;
+  }
+
+  /* WhatsApp button */
+  .btn-whatsapp {
+    @apply bg-[#25D366] text-white font-sans text-sm tracking-widest uppercase px-8 py-4
+           hover:bg-[#1fbb58] transition-all duration-300 cursor-pointer flex items-center gap-3 justify-center;
+  }
+
+  /* Card beauty */
+  .card-beauty {
+    @apply bg-white border border-mauve-100 shadow-beauty rounded-lg;
+  }
+
+  /* Thumbnail active ring */
+  .thumb-active {
+    @apply ring-2 ring-blush ring-offset-2;
+  }
+}
+
+/* Zoom container */
+.zoom-wrapper {
+  overflow: hidden;
+  position: relative;
+  border-radius: 12px;
+}
+.zoom-wrapper img {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: var(--tx, 50%) var(--ty, 50%);
+}
+.zoom-wrapper:hover img {
+  transform: scale(2.2);
+}
+
+/* Glossy shimmer on product name */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #f83d6f 0%,
+    #ff6f94 30%,
+    #f83d6f 50%,
+    #ffa3b8 70%,
+    #f83d6f 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Prose styles for rich description */
+.prose-beauty p {
+  @apply text-mauve-600 leading-relaxed mb-4;
+}
+.prose-beauty ul {
+  @apply space-y-2;
+}
+.prose-beauty li {
+  @apply text-mauve-600 flex items-start gap-2;
+}
+
+/* Star rating */
+.star-filled {
+  color: #f83d6f;
+  fill: #f83d6f;
+}
+.star-empty {
+  color: #d1c0c7;
+  fill: #d1c0c7;
+}
+
+/* Review card */
+.review-card {
+  @apply bg-white border border-mauve-100 rounded-lg p-6 transition-shadow hover:shadow-beauty-lg;
+}
+
+/* Sticky bar slide-up */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.sticky-bar-enter {
+  animation: slideUp 0.35s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+/* Glow effect for beauty products */
+.glow-effect {
+  @apply shadow-glow animate-glow;
+}
+
+/* Float animation */
+.float-animation {
+  @apply animate-float;
+}
