@@ -6,7 +6,7 @@ import { Loader2, Plus, X } from 'lucide-react'
 import { UploadButton } from '@/lib/uploadthing'
 
 interface ShadeEntry { name: string; hex: string; images: string[] }
-interface SizeEntry { label: string; available: boolean }
+interface SizeEntry { label: string; price: number | ''; originalPrice: number | ''; available: boolean }
 interface FAQEntry { question: string; answer: string }
 interface IngredientEntry { name: string; purpose: string; percentage: string }
 
@@ -23,9 +23,9 @@ interface FormData {
 }
 
 const DEFAULT_SIZES: SizeEntry[] = [
-  { label: '30ml', available: true },
-  { label: '50ml', available: true },
-  { label: '100ml', available: true },
+  { label: '30ml', price: '', originalPrice: '', available: true },
+  { label: '50ml', price: '', originalPrice: '', available: true },
+  { label: '100ml', price: '', originalPrice: '', available: true },
 ]
 
 function toSlug(s: string) {
@@ -55,7 +55,9 @@ function buildInitialForm(initial?: any): FormData {
     highlights: (initial.highlights ?? []).join('\n'),
     tags: (initial.tags ?? []).join(', '),
     colors: initial.colors?.length ? initial.colors.map((c: any) => ({ ...c, images: c.images?.length ? c.images : [''] })) : [{ name: '', hex: '#000000', images: [''] }],
-    sizes: initial.sizes?.length ? initial.sizes : DEFAULT_SIZES,
+    sizes: initial.sizes?.length
+      ? initial.sizes.map((s: any) => ({ label: s.label, price: s.price ?? '', originalPrice: s.originalPrice ?? '', available: s.available ?? true }))
+      : DEFAULT_SIZES,
     description: {
       overview: initial.description?.overview ?? '',
       ingredients: initial.description?.ingredients ?? '',
@@ -121,6 +123,12 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         highlights: form.highlights.split('\n').map(s => s.trim()).filter(Boolean),
         tags: form.tags.split(',').map(s => s.trim()).filter(Boolean),
         colors: form.colors.map(c => ({ ...c, images: c.images.filter(Boolean) })),
+        sizes: form.sizes.filter(s => s.label.trim()).map(s => ({
+          label: s.label.trim(),
+          price: s.price !== '' ? Number(s.price) : undefined,
+          originalPrice: s.originalPrice !== '' ? Number(s.originalPrice) : undefined,
+          available: s.available,
+        })),
         productInfo: {
           ...form.productInfo,
           skinType: form.productInfo.skinType.split(',').map(s => s.trim()).filter(Boolean),
@@ -342,22 +350,27 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
           </div>
         )}
 
-        {/* Tab 2: Sizes (bottle/pack size) */}
+        {/* Tab 2: Sizes (bottle/pack size, each with its own price) */}
         {tab === 2 && (
           <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-2 text-xs font-medium text-gray-500 px-3 mb-1">
-              <div>Size (e.g. 30ml, 50ml, 100g)</div><div>Available</div>
+            <p className="text-xs text-gray-500 mb-2">Set a price per bottle/pack size. Leave price blank to fall back to the base price above.</p>
+            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-gray-500 px-3 mb-1">
+              <div>Size (e.g. 30ml)</div><div>Price (PKR)</div><div>Original Price</div><div>Available</div><div></div>
             </div>
             {form.sizes.map((size, si) => (
-              <div key={si} className="grid grid-cols-2 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
+              <div key={si} className="grid grid-cols-5 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
                 <input className={`${inp} font-medium`} value={size.label} placeholder="30ml" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
-                <div className="flex items-center justify-between">
+                <input className={inp} type="number" value={size.price} placeholder="Base price" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], price: e.target.value === '' ? '' : Number(e.target.value) }; setF('sizes', s) }} />
+                <input className={inp} type="number" value={size.originalPrice} placeholder="Optional" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], originalPrice: e.target.value === '' ? '' : Number(e.target.value) }; setF('sizes', s) }} />
+                <div className="flex justify-center">
                   <input type="checkbox" checked={size.available} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], available: e.target.checked }; setF('sizes', s) }} className="w-4 h-4 text-blush-500 rounded border-gray-300" />
+                </div>
+                <div className="flex justify-end">
                   <button type="button" onClick={() => setF('sizes', form.sizes.filter((_, i) => i !== si))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
                 </div>
               </div>
             ))}
-            <button type="button" onClick={() => setF('sizes', [...form.sizes, { label: '', available: true }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 mt-2">
+            <button type="button" onClick={() => setF('sizes', [...form.sizes, { label: '', price: '', originalPrice: '', available: true }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 mt-2">
               <Plus size={13} /> Add size
             </button>
           </div>

@@ -7,6 +7,8 @@ export interface ProductColor {
 
 export interface ProductSize {
   label: string
+  price?: number
+  originalPrice?: number
   available: boolean
 }
 

@@ -8,8 +8,10 @@ const ColorSchema = new Schema({
 }, { _id: false })
 
 const SizeSchema = new Schema({
-  label:     { type: String, required: true },
-  available: { type: Boolean, default: true },
+  label:         { type: String, required: true },
+  price:         { type: Number },
+  originalPrice: { type: Number },
+  available:     { type: Boolean, default: true },
 }, { _id: false })
 
 const ReviewSchema = new Schema({

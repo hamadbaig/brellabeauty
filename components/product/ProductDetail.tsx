@@ -28,13 +28,18 @@ export default function ProductDetail({ product }: Props) {
 
     const shade = product.colors[shadeIndex]
     const images = shade?.images?.length ? shade.images : product.colors[0]?.images ?? []
-    const discountPct = product.originalPrice
-        ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+
+    const selectedSize = product.sizes?.find(s => s.label === sizeLabel)
+    const displayPrice = selectedSize?.price ?? product.price
+    const displayOriginalPrice = selectedSize?.price !== undefined ? selectedSize.originalPrice : product.originalPrice
+    const discountPct = displayOriginalPrice
+        ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
         : 0
 
     const whatsappHref = buildProductWhatsAppLink(product, {
         shade: shade?.name,
         size: sizeLabel,
+        price: displayPrice,
         url: typeof window !== 'undefined' ? window.location.href : undefined,
     })
 
@@ -88,9 +93,9 @@ export default function ProductDetail({ product }: Props) {
                 )}
 
                 <div className="flex items-baseline gap-3 mb-6">
-                    <span className="text-3xl font-bold text-mauve-900">{product.currencySymbol} {product.price.toLocaleString('en-PK')}</span>
-                    {product.originalPrice && (
-                        <span className="text-lg text-mauve-400 line-through">{product.currencySymbol} {product.originalPrice.toLocaleString('en-PK')}</span>
+                    <span className="text-3xl font-bold text-mauve-900">{product.currencySymbol} {displayPrice.toLocaleString('en-PK')}</span>
+                    {displayOriginalPrice && (
+                        <span className="text-lg text-mauve-400 line-through">{product.currencySymbol} {displayOriginalPrice.toLocaleString('en-PK')}</span>
                     )}
                 </div>
 
@@ -126,11 +131,16 @@ export default function ProductDetail({ product }: Props) {
                                     type="button"
                                     disabled={!s.available}
                                     onClick={() => setSizeLabel(s.label)}
-                                    className={`px-4 py-2 text-sm font-sans border transition-colors ${!s.available ? 'border-mauve-100 text-mauve-300 cursor-not-allowed line-through' :
-                                            sizeLabel === s.label ? 'border-blush bg-blush text-white' : 'border-mauve-200 text-mauve-700 hover:border-blush'
+                                    className={`flex flex-col items-center px-4 py-2 text-sm font-sans border transition-colors ${!s.available ? 'border-mauve-100 text-mauve-300 cursor-not-allowed' :
+                                        sizeLabel === s.label ? 'border-blush bg-blush text-white' : 'border-mauve-200 text-mauve-700 hover:border-blush'
                                         }`}
                                 >
-                                    {s.label}
+                                    <span className={!s.available ? 'line-through' : ''}>{s.label}</span>
+                                    {s.price !== undefined && (
+                                        <span className={`text-[10px] ${sizeLabel === s.label ? 'text-white/80' : 'text-mauve-400'}`}>
+                                            {product.currencySymbol} {s.price.toLocaleString('en-PK')}
+                                        </span>
+                                    )}
                                 </button>
                             ))}
                         </div>

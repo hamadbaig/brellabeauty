@@ -93,11 +93,9 @@ const DEFAULT_CONTENT = {
 // Fetches homepage content, seeding it with sensible defaults the first time it's ever requested.
 export async function getHomepageContent(): Promise<Record<string, unknown>> {
   await connectDB()
-  let content = await HomepageContentModel.findOne({ collection: COLLECTION_NAME }).lean<Record<string, unknown>>()
+  const existing = await HomepageContentModel.findOne({ collection: COLLECTION_NAME }).lean<Record<string, unknown>>()
+  if (existing) return existing
 
-  if (!content) {
-    content = (await HomepageContentModel.create(DEFAULT_CONTENT)).toObject()
-  }
-
-  return content
+  const created = await HomepageContentModel.create(DEFAULT_CONTENT)
+  return created.toObject()
 }
