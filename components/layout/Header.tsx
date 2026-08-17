@@ -7,7 +7,7 @@ export default function Header({ variant }: { variant?: 'dark' | 'light' }) {
                 <nav className="hidden md:flex gap-8">
                     <a href="/" className="hover:text-blush">Home</a>
                     <a href="/shop" className="hover:text-blush">Shop</a>
-                    <a href="/#collections" className="hover:text-blush">Collections</a>
+                    <a href="/collections" className="hover:text-blush">Collections</a>
                 </nav>
             </div>
         </header>

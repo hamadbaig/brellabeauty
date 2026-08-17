@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     if (!body.whatsappNumber) {
-      body.whatsappNumber = '923347573726'
+      body.whatsappNumber = '923172760406'
     }
 
     if (!body.currency) body.currency = 'PKR'

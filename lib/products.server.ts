@@ -101,22 +101,20 @@ export async function getShopProducts(filters: ShopFilters = {}): Promise<ShopRe
   }
 }
 
-export async function getShopMeta(): Promise<ShopMeta> {
+export async function getShopMeta(category?: string): Promise<ShopMeta> {
   await connectDB()
 
-  const [categories, subcategories, prices] = await Promise.all([
-    ProductModel.distinct('category').lean<string[]>(),
-    ProductModel.distinct('subcategory').lean<string[]>(),
-    ProductModel.find({}, { price: 1 }).lean<{ price: number }[]>(),
+  const catFilter = category ? { category } : {}
+
+  const [categories, subcategories, priceAgg] = await Promise.all([
+    ProductModel.distinct('category') as Promise<string[]>,
+    ProductModel.distinct('subcategory', catFilter) as Promise<string[]>,
+    ProductModel.aggregate([{ $group: { _id: null, min: { $min: '$price' }, max: { $max: '$price' } } }]),
   ])
 
-  const priceValues = prices.map(p => p.price)
-  const min = priceValues.length ? Math.min(...priceValues) : 0
-  const max = priceValues.length ? Math.max(...priceValues) : 10000
-
   return {
-    categories:  categories.filter(Boolean),
-    subcategories: subcategories.filter(Boolean),
-    priceRange: { min, max },
+    categories:    categories.filter(Boolean).sort(),
+    subcategories: subcategories.filter(Boolean).sort(),
+    priceRange:    { min: priceAgg[0]?.min ?? 0, max: priceAgg[0]?.max ?? 10000 },
   }
 }

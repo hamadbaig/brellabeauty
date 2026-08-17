@@ -1,6 +1,5 @@
 import { getAllProducts } from '@/lib/products.server'
-import { connectDB } from '@/lib/mongodb'
-import { HomepageContentModel } from '@/models/HomepageContent'
+import { getHomepageContent } from '@/lib/homepage.server'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import HeroSection from '@/components/home/HeroSection'
@@ -20,14 +19,10 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-    await connectDB()
-
-    const [products, hpContent] = await Promise.all([
+    const [products, hp] = await Promise.all([
         getAllProducts(),
-        HomepageContentModel.findOne({ collection: 'Brella Beauty' }).lean<any>(),
-    ])
-
-    const hp = hpContent ?? {}
+        getHomepageContent(),
+    ]) as [Awaited<ReturnType<typeof getAllProducts>>, any]
 
     return (
         <>

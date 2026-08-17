@@ -81,7 +81,7 @@ export default function CategoryForm({ initial, mode }: Props) {
             className={inputCls}
             value={form.name}
             onChange={e => { set('name', e.target.value); if (!initial) set('slug', toSlug(e.target.value)) }}
-            placeholder="Open Abayas"
+            placeholder="Lip Products"
             required
           />
         </div>
@@ -91,7 +91,7 @@ export default function CategoryForm({ initial, mode }: Props) {
             className={inputCls}
             value={form.slug}
             onChange={e => set('slug', toSlug(e.target.value))}
-            placeholder="open-abayas"
+            placeholder="lip-products"
             required
           />
         </div>
@@ -125,7 +125,7 @@ export default function CategoryForm({ initial, mode }: Props) {
         ) : (
           <UploadButton
             endpoint="imageUploader"
-            onClientUploadComplete={res => { if (res[0]) set('image', res[0].url) }}
+            onClientUploadComplete={res => { if (res[0]) set('image', res[0].ufsUrl) }}
             onUploadError={err => alert(`Upload failed: ${err.message}`)}
             appearance={{
               button: 'bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ut-uploading:opacity-60',

@@ -1,6 +1,6 @@
 import { Product } from '@/types/product'
 
-export const WHATSAPP_NUMBER = '923347573726'
+export const WHATSAPP_NUMBER = '923172760406'
 
 export const products: Product[] = [
   {

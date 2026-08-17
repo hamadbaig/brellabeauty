@@ -102,7 +102,7 @@ export default function SubcategoryForm({ initial, mode, categories }: Props) {
             className={inputCls}
             value={form.name}
             onChange={e => { set('name', e.target.value); if (!initial) set('slug', toSlug(e.target.value)) }}
-            placeholder="Nida Open Abayas"
+            placeholder="Glossy Finish"
             required
           />
         </div>
@@ -112,7 +112,7 @@ export default function SubcategoryForm({ initial, mode, categories }: Props) {
             className={inputCls}
             value={form.slug}
             onChange={e => set('slug', toSlug(e.target.value))}
-            placeholder="nida-open-abayas"
+            placeholder="glossy-finish"
             required
           />
         </div>

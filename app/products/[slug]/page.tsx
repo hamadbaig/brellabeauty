@@ -1,8 +1,11 @@
-// Placeholder - Copy from Qyra Noor and adapt for beauty products
-import { getProductBySlug, getAllProductSlugs } from '@/lib/products.server'
+import { getProductBySlug, getAllProductSlugs, getRelatedProducts, getShopProducts } from '@/lib/products.server'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import ProductDetail from '@/components/product/ProductDetail'
+import ShopProductCard from '@/components/shop/ShopProductCard'
 
 export async function generateStaticParams() {
     const slugs = await getAllProductSlugs()
@@ -25,110 +28,41 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     const product = await getProductBySlug(slug)
     if (!product) notFound()
 
+    let related = await getRelatedProducts(product.relatedProductIds)
+    if (related.length === 0) {
+        const sameCategory = await getShopProducts({ category: product.category, limit: 5 })
+        related = sameCategory.products.filter(p => p.id !== product.id).slice(0, 4)
+    }
+
     return (
         <>
-            <Header />
-            <main className="min-h-screen py-12 px-6">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        {/* Image Gallery */}
-                        <div>
-                            {product.colors?.[0]?.images?.[0] && (
-                                <img
-                                    src={product.colors[0].images[0]}
-                                    alt={product.name}
-                                    className="w-full rounded-xl shadow-beauty-lg"
-                                />
-                            )}
-                        </div>
-
-                        {/* Product Info */}
-                        <div>
-                            <h1 className="font-serif text-4xl mb-4">{product.name}</h1>
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-3xl font-bold text-blush">PKR {product.price?.toLocaleString()}</span>
-                                {product.originalPrice && (
-                                    <span className="text-xl text-gray-400 line-through">PKR {product.originalPrice?.toLocaleString()}</span>
-                                )}
-                            </div>
-
-                            <p className="text-gray-600 mb-8">{product.description.overview}</p>
-
-                            {/* Colors */}
-                            {product.colors && product.colors.length > 0 && (
-                                <div className="mb-8">
-                                    <h3 className="font-medium mb-3">Available Shades</h3>
-                                    <div className="flex gap-3">
-                                        {product.colors.map(color => (
-                                            <div key={color.name} className="flex flex-col items-center gap-2">
-                                                <div
-                                                    className="w-12 h-12 rounded-full border-2 border-mauve-200 shadow-sm"
-                                                    style={{ backgroundColor: color.hex }}
-                                                />
-                                                <span className="text-xs text-gray-600">{color.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* WhatsApp CTA */}
-                            <a
-                                href={`https://wa.me/${product.whatsappNumber}?text=Hi! I'm interested in ${product.name}`}
-                                className="btn-whatsapp w-full"
-                            >
-                                Order via WhatsApp
-                            </a>
-
-                            {/* Highlights */}
-                            {product.highlights && product.highlights.length > 0 && (
-                                <div className="mt-8 bg-pearl rounded-lg p-6">
-                                    <h3 className="font-medium mb-3">Key Features</h3>
-                                    <ul className="space-y-2">
-                                        {product.highlights.map((highlight, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                                                <span className="text-blush">✓</span>
-                                                {highlight}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+            <Header variant="light" />
+            <main className="min-h-screen bg-pearl pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-6xl mx-auto">
+                    {/* Breadcrumbs */}
+                    <div className="flex items-center gap-2 text-sm text-mauve-500 mb-8 font-sans">
+                        <Link href="/" className="hover:text-blush">Home</Link>
+                        <ChevronRight size={13} />
+                        <Link href="/shop" className="hover:text-blush">Shop</Link>
+                        <ChevronRight size={13} />
+                        <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-blush">{product.category}</Link>
+                        <ChevronRight size={13} />
+                        <span className="text-mauve-900">{product.name}</span>
                     </div>
 
-                    {/* Description Tabs */}
-                    <div className="mt-16 bg-white rounded-xl shadow-beauty p-8">
-                        <h2 className="font-serif text-2xl mb-6">Product Details</h2>
+                    <ProductDetail product={product} />
 
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="font-medium text-lg mb-2">Overview</h3>
-                                <p className="text-gray-600">{product.description.overview}</p>
+                    {/* Related products */}
+                    {related.length > 0 && (
+                        <div className="mt-20 border-t border-mauve-100 pt-12">
+                            <h2 className="font-serif text-2xl sm:text-3xl text-mauve-950 mb-8">You May Also Like</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                                {related.map((p, i) => (
+                                    <ShopProductCard key={p.id} product={p} index={i} />
+                                ))}
                             </div>
-
-                            {product.description.ingredients && (
-                                <div>
-                                    <h3 className="font-medium text-lg mb-2">Ingredients</h3>
-                                    <p className="text-gray-600">{product.description.ingredients}</p>
-                                </div>
-                            )}
-
-                            {product.description.howToUse && (
-                                <div>
-                                    <h3 className="font-medium text-lg mb-2">How to Use</h3>
-                                    <p className="text-gray-600 whitespace-pre-line">{product.description.howToUse}</p>
-                                </div>
-                            )}
-
-                            {product.description.benefits && (
-                                <div>
-                                    <h3 className="font-medium text-lg mb-2">Benefits</h3>
-                                    <p className="text-gray-600 whitespace-pre-line">{product.description.benefits}</p>
-                                </div>
-                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </main>
             <Footer />

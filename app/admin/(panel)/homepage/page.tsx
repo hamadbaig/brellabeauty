@@ -5,6 +5,38 @@ import { motion } from 'framer-motion'
 import AdminHeader from '@/components/admin/AdminHeader'
 import { ArrowLeft, Save, X } from 'lucide-react'
 import Link from 'next/link'
+import { UploadButton } from '@/lib/uploadthing'
+
+function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (url: string) => void }) {
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+            {value ? (
+                <div className="relative inline-block">
+                    <img src={value} alt="" className="h-32 max-w-xs object-cover rounded-lg border border-mauve-200" />
+                    <button
+                        type="button"
+                        title="Remove image"
+                        onClick={() => onChange('')}
+                        className="absolute -top-2 -right-2 bg-white rounded-full shadow text-red-400 hover:text-red-600 p-1"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+            ) : (
+                <UploadButton
+                    endpoint="imageUploader"
+                    onClientUploadComplete={res => { if (res[0]) onChange(res[0].ufsUrl) }}
+                    onUploadError={err => alert(`Upload failed: ${err.message}`)}
+                    appearance={{
+                        button: 'bg-blush-500 hover:bg-blush-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ut-uploading:opacity-60',
+                        allowedContent: 'text-gray-400 text-xs mt-1',
+                    }}
+                />
+            )}
+        </div>
+    )
+}
 
 export default function HomepageEditor() {
     const [content, setContent] = useState<any>(null)
@@ -150,8 +182,8 @@ export default function HomepageEditor() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-lg capitalize font-medium transition-all ${activeTab === tab
-                                    ? 'bg-blush-500 text-white'
-                                    : 'bg-transparent text-gray-600 hover:bg-gray-100'
+                                ? 'bg-blush-500 text-white'
+                                : 'bg-transparent text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             {tab}
@@ -207,16 +239,11 @@ export default function HomepageEditor() {
                                         className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Background Image URL</label>
-                                    <input
-                                        type="text"
-                                        value={content.hero.backgroundImage || ''}
-                                        onChange={(e) => handleHeroChange('backgroundImage', e.target.value)}
-                                        className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
-                                        placeholder="https://..."
-                                    />
-                                </div>
+                                <ImageField
+                                    label="Background Image"
+                                    value={content.hero.backgroundImage || ''}
+                                    onChange={(url) => handleHeroChange('backgroundImage', url)}
+                                />
                             </div>
                         </div>
                     )}
@@ -246,16 +273,11 @@ export default function HomepageEditor() {
                                                 className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                                            <input
-                                                type="text"
-                                                value={collection.image || ''}
-                                                onChange={(e) => handleCollectionChange(idx, 'image', e.target.value)}
-                                                className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
-                                                placeholder="https://..."
-                                            />
-                                        </div>
+                                        <ImageField
+                                            label="Image"
+                                            value={collection.image || ''}
+                                            onChange={(url) => handleCollectionChange(idx, 'image', url)}
+                                        />
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
@@ -374,16 +396,11 @@ export default function HomepageEditor() {
                                             />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={testimonial.image || ''}
-                                                    onChange={(e) => handleTestimonialChange(idx, 'image', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
+                                            <ImageField
+                                                label="Image"
+                                                value={testimonial.image || ''}
+                                                onChange={(url) => handleTestimonialChange(idx, 'image', url)}
+                                            />
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
                                                 <input
@@ -445,16 +462,11 @@ export default function HomepageEditor() {
                                         />
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Background Image URL</label>
-                                    <input
-                                        type="text"
-                                        value={content.cta.backgroundImage || ''}
-                                        onChange={(e) => handleCTAChange('backgroundImage', e.target.value)}
-                                        className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-500"
-                                        placeholder="https://..."
-                                    />
-                                </div>
+                                <ImageField
+                                    label="Background Image"
+                                    value={content.cta.backgroundImage || ''}
+                                    onChange={(url) => handleCTAChange('backgroundImage', url)}
+                                />
                             </div>
                         </div>
                     )}

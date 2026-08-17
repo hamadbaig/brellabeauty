@@ -8,7 +8,7 @@ const HomepageSettingsSchema = new Schema({
     image:           { type: String, default: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1920&q=80' },
     cta1Text:        { type: String, default: 'Shop Collection' },
     cta1Link:        { type: String, default: '/#collections' },
-    whatsappNumber:  { type: String, default: '923347573726' },
+    whatsappNumber:  { type: String, default: '923172760406' },
     stats: { type: [{ num: String, label: String }], default: [
       { num: '1000+', label: 'Happy Customers' },
       { num: '100+',  label: 'Premium Products' },
@@ -39,7 +39,7 @@ const HomepageSettingsSchema = new Schema({
       { num: '4.9',  label: 'Avg. Rating' },
     ]},
     ctaText: { type: String, default: 'Chat With Our Team' },
-    ctaLink: { type: String, default: 'https://wa.me/923347573726' },
+    ctaLink: { type: String, default: 'https://wa.me/923172760406' },
   },
   whyUs: {
     label:   { type: String, default: 'The Brella Beauty Difference' },
@@ -66,7 +66,7 @@ const HomepageSettingsSchema = new Schema({
   whatsappCTA: {
     heading:        { type: String, default: 'Your Perfect Shade\nIs One Message Away' },
     subheading:     { type: String, default: 'Skip the checkout process. Message us directly on WhatsApp to browse our full collection, ask about product details, or place your order in minutes — our team responds within the hour.' },
-    whatsappNumber: { type: String, default: '923347573726' },
+    whatsappNumber: { type: String, default: '923172760406' },
     ctaMessage:     { type: String, default: "Hi! I'm interested in Brella Beauty products. Could you please share your latest lip gloss collection and available shades?" },
     trustSignals:   { type: [String], default: ['Replies within 1 hour', 'Secure & trusted', 'Pakistan-wide delivery', 'International shipping'] },
   },

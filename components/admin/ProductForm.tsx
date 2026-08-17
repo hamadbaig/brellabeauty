@@ -2,31 +2,30 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Plus, X } from 'lucide-react'
 import { UploadButton } from '@/lib/uploadthing'
 
-interface ColorEntry { name: string; hex: string; images: string[] }
-interface SizeEntry { label: string; available: boolean; measurements: { chest: string; waist: string; hips: string; length: string } }
+interface ShadeEntry { name: string; hex: string; images: string[] }
+interface SizeEntry { label: string; available: boolean }
 interface FAQEntry { question: string; answer: string }
+interface IngredientEntry { name: string; purpose: string; percentage: string }
 
 interface FormData {
   name: string; slug: string; sku: string; price: number; originalPrice: number | ''; collection: string
-  category: string; subcategory: string; fabric: string; inStock: boolean; stockCount: number | ''
+  category: string; subcategory: string; finish: string; inStock: boolean; stockCount: number | ''
   highlights: string; tags: string; whatsappNumber: string; metaTitle: string; metaDescription: string
-  colors: ColorEntry[]; sizes: SizeEntry[]
-  description: { overview: string; fabricDetails: string; stylingRecommendations: string; careInstructions: string }
-  fabricInfo: { type: string; softness: string; weight: string; season: string; care: string; origin: string }
+  colors: ShadeEntry[]; sizes: SizeEntry[]
+  description: { overview: string; ingredients: string; howToUse: string; benefits: string }
+  ingredientsList: IngredientEntry[]
+  productInfo: { crueltyFree: boolean; vegan: boolean; paraben: boolean; waterproof: boolean; longLasting: string; skinType: string }
   deliveryInfo: { estimatedDays: string; regions: string; returnPolicy: string; exchangePolicy: string; freeShippingThreshold: number | '' }
   faqs: FAQEntry[]
 }
 
 const DEFAULT_SIZES: SizeEntry[] = [
-  { label: 'XS', available: true, measurements: { chest: '82–86', waist: '66–70', hips: '90–94', length: '135' } },
-  { label: 'S', available: true, measurements: { chest: '86–90', waist: '70–74', hips: '94–98', length: '137' } },
-  { label: 'M', available: true, measurements: { chest: '90–94', waist: '74–78', hips: '98–102', length: '139' } },
-  { label: 'L', available: true, measurements: { chest: '94–98', waist: '78–82', hips: '102–106', length: '141' } },
-  { label: 'XL', available: true, measurements: { chest: '98–102', waist: '82–86', hips: '106–110', length: '143' } },
-  { label: 'XXL', available: false, measurements: { chest: '102–106', waist: '86–90', hips: '110–114', length: '145' } },
+  { label: '30ml', available: true },
+  { label: '50ml', available: true },
+  { label: '100ml', available: true },
 ]
 
 function toSlug(s: string) {
@@ -37,24 +36,41 @@ function buildInitialForm(initial?: any): FormData {
   if (!initial) {
     return {
       name: '', slug: '', sku: '', price: 0, originalPrice: '', collection: '', category: '', subcategory: '',
-      fabric: '', inStock: true, stockCount: '', highlights: '', tags: '', whatsappNumber: '923347573726',
+      finish: '', inStock: true, stockCount: '', highlights: '', tags: '', whatsappNumber: '923172760406',
       metaTitle: '', metaDescription: '',
-      colors: [{ name: 'Black', hex: '#1a1a1a', images: [''] }],
+      colors: [{ name: 'Rose Quartz', hex: '#E8B4B8', images: [''] }],
       sizes: DEFAULT_SIZES,
-      description: { overview: '', fabricDetails: '', stylingRecommendations: '', careInstructions: '' },
-      fabricInfo: { type: '', softness: '', weight: '', season: '', care: '', origin: '' },
-      deliveryInfo: { estimatedDays: '3–5 Business Days', regions: 'All Major Cities in Pakistan\nInternational Shipping Available', returnPolicy: '7-day easy returns', exchangePolicy: 'Free exchange within 14 days', freeShippingThreshold: 5000 },
+      description: { overview: '', ingredients: '', howToUse: '', benefits: '' },
+      ingredientsList: [],
+      productInfo: { crueltyFree: true, vegan: false, paraben: false, waterproof: false, longLasting: '', skinType: 'All' },
+      deliveryInfo: { estimatedDays: '3–5 Business Days', regions: 'All Major Cities in Pakistan\nInternational Shipping Available', returnPolicy: '7-day easy returns', exchangePolicy: 'Free exchange within 14 days', freeShippingThreshold: 2500 },
       faqs: [],
     }
   }
   return {
     ...initial,
+    finish: initial.finish ?? '',
     originalPrice: initial.originalPrice ?? '',
     stockCount: initial.stockCount ?? '',
     highlights: (initial.highlights ?? []).join('\n'),
     tags: (initial.tags ?? []).join(', '),
     colors: initial.colors?.length ? initial.colors.map((c: any) => ({ ...c, images: c.images?.length ? c.images : [''] })) : [{ name: '', hex: '#000000', images: [''] }],
     sizes: initial.sizes?.length ? initial.sizes : DEFAULT_SIZES,
+    description: {
+      overview: initial.description?.overview ?? '',
+      ingredients: initial.description?.ingredients ?? '',
+      howToUse: initial.description?.howToUse ?? '',
+      benefits: initial.description?.benefits ?? '',
+    },
+    ingredientsList: initial.ingredientsList ?? [],
+    productInfo: {
+      crueltyFree: initial.productInfo?.crueltyFree ?? true,
+      vegan: initial.productInfo?.vegan ?? false,
+      paraben: initial.productInfo?.paraben ?? false,
+      waterproof: initial.productInfo?.waterproof ?? false,
+      longLasting: initial.productInfo?.longLasting ?? '',
+      skinType: (initial.productInfo?.skinType ?? ['All']).join(', '),
+    },
     deliveryInfo: { ...initial.deliveryInfo, regions: (initial.deliveryInfo?.regions ?? []).join('\n'), freeShippingThreshold: initial.deliveryInfo?.freeShippingThreshold ?? '' },
     faqs: initial.faqs ?? [],
   }
@@ -66,7 +82,7 @@ interface Props {
   categories?: { name: string; slug: string }[]
 }
 
-const TABS = ['Basic', 'Colors', 'Sizes', 'Description', 'Fabric & Delivery', 'FAQs']
+const TABS = ['Basic', 'Shades', 'Sizes', 'Description', 'Ingredients & Info', 'Delivery & FAQs']
 
 export default function ProductForm({ initial, mode, categories = [] }: Props) {
   const router = useRouter()
@@ -105,6 +121,10 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         highlights: form.highlights.split('\n').map(s => s.trim()).filter(Boolean),
         tags: form.tags.split(',').map(s => s.trim()).filter(Boolean),
         colors: form.colors.map(c => ({ ...c, images: c.images.filter(Boolean) })),
+        productInfo: {
+          ...form.productInfo,
+          skinType: form.productInfo.skinType.split(',').map(s => s.trim()).filter(Boolean),
+        },
         deliveryInfo: {
           ...form.deliveryInfo,
           regions: form.deliveryInfo.regions.split('\n').map(s => s.trim()).filter(Boolean),
@@ -130,7 +150,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
     }
   }
 
-  const inp = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent'
+  const inp = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush-400 focus:border-transparent'
   const lbl = 'block text-xs font-medium text-gray-600 mb-1'
 
   return (
@@ -140,7 +160,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         {TABS.map((t, i) => (
           <button
             key={t} type="button" onClick={() => setTab(i)}
-            className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${tab === i ? 'border-yellow-500 text-yellow-600 bg-yellow-50/50' : 'border-transparent text-gray-500 hover:text-gray-700'
+            className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${tab === i ? 'border-blush-500 text-blush-600 bg-blush-50/50' : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
             {t}
@@ -157,7 +177,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={lbl}>Product Name *</label>
-                <input className={inp} value={form.name} onChange={e => { setF('name', e.target.value); if (!initial) setF('slug', toSlug(e.target.value)) }} required />
+                <input className={inp} value={form.name} onChange={e => { setF('name', e.target.value); if (!initial) setF('slug', toSlug(e.target.value)) }} placeholder="Rose Quartz Lip Gloss" required />
               </div>
               <div>
                 <label className={lbl}>Slug *</label>
@@ -167,7 +187,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className={lbl}>SKU *</label>
-                <input className={inp} value={form.sku} onChange={e => setF('sku', e.target.value)} placeholder="QN-005" required />
+                <input className={inp} value={form.sku} onChange={e => setF('sku', e.target.value)} placeholder="BB-LG-001" required />
               </div>
               <div>
                 <label className={lbl}>Price (PKR) *</label>
@@ -181,11 +201,11 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={lbl}>Collection</label>
-                <input className={inp} value={form.collection} onChange={e => setF('collection', e.target.value)} placeholder="Premium Collection" />
+                <input className={inp} value={form.collection} onChange={e => setF('collection', e.target.value)} placeholder="Premium Gloss Collection" />
               </div>
               <div>
-                <label className={lbl}>Fabric</label>
-                <input className={inp} value={form.fabric} onChange={e => setF('fabric', e.target.value)} placeholder="Premium Nida" />
+                <label className={lbl}>Finish</label>
+                <input className={inp} value={form.finish} onChange={e => setF('finish', e.target.value)} placeholder="Matte, Glossy, Satin, Shimmer…" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -221,7 +241,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3 pt-2">
-                <input type="checkbox" id="inStock" checked={form.inStock} onChange={e => setF('inStock', e.target.checked)} className="w-4 h-4 text-yellow-500 rounded border-gray-300" />
+                <input type="checkbox" id="inStock" checked={form.inStock} onChange={e => setF('inStock', e.target.checked)} className="w-4 h-4 text-blush-500 rounded border-gray-300" />
                 <label htmlFor="inStock" className="text-sm font-medium text-gray-700">In Stock</label>
               </div>
               <div>
@@ -231,11 +251,11 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
             </div>
             <div>
               <label className={lbl}>Highlights (one per line)</label>
-              <textarea className={`${inp} resize-none`} rows={4} value={form.highlights} onChange={e => setF('highlights', e.target.value)} placeholder="Premium Nida Fabric&#10;Breathable Material" />
+              <textarea className={`${inp} resize-none`} rows={4} value={form.highlights} onChange={e => setF('highlights', e.target.value)} placeholder="Long-lasting 8+ hour formula&#10;Moisturizing with Vitamin E" />
             </div>
             <div>
               <label className={lbl}>Tags (comma separated)</label>
-              <input className={inp} value={form.tags} onChange={e => setF('tags', e.target.value)} placeholder="abaya, nida, premium" />
+              <input className={inp} value={form.tags} onChange={e => setF('tags', e.target.value)} placeholder="lip gloss, vegan, cruelty-free" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -256,13 +276,13 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
           </div>
         )}
 
-        {/* Tab 1: Colors */}
+        {/* Tab 1: Shades (Colors) */}
         {tab === 1 && (
           <div className="space-y-4">
             {form.colors.map((color, ci) => (
               <div key={ci} className="border border-gray-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-gray-700">Color {ci + 1}</h4>
+                  <h4 className="text-sm font-semibold text-gray-700">Shade {ci + 1}</h4>
                   {form.colors.length > 1 && (
                     <button type="button" onClick={() => setF('colors', form.colors.filter((_, i) => i !== ci))} className="text-red-400 hover:text-red-600 transition-colors">
                       <X size={16} />
@@ -271,8 +291,8 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className={lbl}>Name</label>
-                    <input className={inp} value={color.name} onChange={e => { const c = [...form.colors]; c[ci] = { ...c[ci], name: e.target.value }; setF('colors', c) }} placeholder="Black" />
+                    <label className={lbl}>Shade Name</label>
+                    <input className={inp} value={color.name} onChange={e => { const c = [...form.colors]; c[ci] = { ...c[ci], name: e.target.value }; setF('colors', c) }} placeholder="Rose Quartz" />
                   </div>
                   <div>
                     <label className={lbl}>Hex Color</label>
@@ -303,43 +323,41 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                     endpoint="imageUploader"
                     onClientUploadComplete={res => {
                       const c = [...form.colors]
-                      const newUrls = res.map(r => r.url)
+                      const newUrls = res.map(r => r.ufsUrl)
                       c[ci].images = [...c[ci].images.filter(Boolean), ...newUrls]
                       setF('colors', c)
                     }}
                     onUploadError={err => alert(`Upload failed: ${err.message}`)}
                     appearance={{
-                      button: 'bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ut-uploading:opacity-60',
+                      button: 'bg-blush-500 hover:bg-blush-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ut-uploading:opacity-60',
                       allowedContent: 'text-gray-400 text-xs mt-1',
                     }}
                   />
                 </div>
               </div>
             ))}
-            <button type="button" onClick={() => setF('colors', [...form.colors, { name: '', hex: '#000000', images: [''] }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-yellow-600 border border-dashed border-gray-300 hover:border-yellow-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
-              <Plus size={14} /> Add Color
+            <button type="button" onClick={() => setF('colors', [...form.colors, { name: '', hex: '#000000', images: [''] }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 border border-dashed border-gray-300 hover:border-blush-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
+              <Plus size={14} /> Add Shade
             </button>
           </div>
         )}
 
-        {/* Tab 2: Sizes */}
+        {/* Tab 2: Sizes (bottle/pack size) */}
         {tab === 2 && (
           <div className="space-y-2">
-            <div className="grid grid-cols-6 gap-2 text-xs font-medium text-gray-500 px-3 mb-1">
-              <div>Size</div><div>Available</div><div>Chest (cm)</div><div>Waist (cm)</div><div>Hips (cm)</div><div>Length (cm)</div>
+            <div className="grid grid-cols-2 gap-2 text-xs font-medium text-gray-500 px-3 mb-1">
+              <div>Size (e.g. 30ml, 50ml, 100g)</div><div>Available</div>
             </div>
             {form.sizes.map((size, si) => (
-              <div key={si} className="grid grid-cols-6 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
-                <input className={`${inp} text-center font-medium`} value={size.label} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
-                <div className="flex justify-center">
-                  <input type="checkbox" checked={size.available} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], available: e.target.checked }; setF('sizes', s) }} className="w-4 h-4 text-yellow-500 rounded border-gray-300" />
+              <div key={si} className="grid grid-cols-2 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
+                <input className={`${inp} font-medium`} value={size.label} placeholder="30ml" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
+                <div className="flex items-center justify-between">
+                  <input type="checkbox" checked={size.available} onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], available: e.target.checked }; setF('sizes', s) }} className="w-4 h-4 text-blush-500 rounded border-gray-300" />
+                  <button type="button" onClick={() => setF('sizes', form.sizes.filter((_, i) => i !== si))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
                 </div>
-                {(['chest', 'waist', 'hips', 'length'] as const).map(field => (
-                  <input key={field} className={inp} value={size.measurements[field]} placeholder="e.g. 90–94" onChange={e => { const s = [...form.sizes]; s[si].measurements[field] = e.target.value; setF('sizes', s) }} />
-                ))}
               </div>
             ))}
-            <button type="button" onClick={() => setF('sizes', [...form.sizes, { label: '', available: true, measurements: { chest: '', waist: '', hips: '', length: '' } }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-yellow-600 mt-2">
+            <button type="button" onClick={() => setF('sizes', [...form.sizes, { label: '', available: true }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 mt-2">
               <Plus size={13} /> Add size
             </button>
           </div>
@@ -348,29 +366,74 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         {/* Tab 3: Description */}
         {tab === 3 && (
           <div className="space-y-4">
-            {(['overview', 'fabricDetails', 'stylingRecommendations', 'careInstructions'] as const).map(k => (
-              <div key={k}>
-                <label className={lbl}>{k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</label>
-                <textarea className={`${inp} resize-none`} rows={5} value={form.description[k]} onChange={e => setNested('description', k, e.target.value)} />
-              </div>
-            ))}
+            <div>
+              <label className={lbl}>Overview</label>
+              <textarea className={`${inp} resize-none`} rows={5} value={form.description.overview} onChange={e => setNested('description', 'overview', e.target.value)} />
+            </div>
+            <div>
+              <label className={lbl}>Ingredients</label>
+              <textarea className={`${inp} resize-none`} rows={5} value={form.description.ingredients} onChange={e => setNested('description', 'ingredients', e.target.value)} />
+            </div>
+            <div>
+              <label className={lbl}>How To Use</label>
+              <textarea className={`${inp} resize-none`} rows={5} value={form.description.howToUse} onChange={e => setNested('description', 'howToUse', e.target.value)} />
+            </div>
+            <div>
+              <label className={lbl}>Benefits</label>
+              <textarea className={`${inp} resize-none`} rows={5} value={form.description.benefits} onChange={e => setNested('description', 'benefits', e.target.value)} />
+            </div>
           </div>
         )}
 
-        {/* Tab 4: Fabric & Delivery */}
+        {/* Tab 4: Ingredients list & Product Info */}
         {tab === 4 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Fabric Information</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {(['type', 'softness', 'weight', 'season', 'care', 'origin'] as const).map(k => (
-                  <div key={k}>
-                    <label className={lbl}>{k.charAt(0).toUpperCase() + k.slice(1)}</label>
-                    <input className={inp} value={form.fabricInfo[k]} onChange={e => setNested('fabricInfo', k, e.target.value)} placeholder={k === 'type' ? 'Premium Nida Crepe' : ''} />
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Key Ingredients</h3>
+              <div className="space-y-2">
+                {form.ingredientsList.map((ing, ii) => (
+                  <div key={ii} className="grid grid-cols-7 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
+                    <input className={`${inp} col-span-3`} placeholder="Vitamin E" value={ing.name} onChange={e => { const l = [...form.ingredientsList]; l[ii] = { ...l[ii], name: e.target.value }; setF('ingredientsList', l) }} />
+                    <input className={`${inp} col-span-3`} placeholder="Antioxidant & moisturizer" value={ing.purpose} onChange={e => { const l = [...form.ingredientsList]; l[ii] = { ...l[ii], purpose: e.target.value }; setF('ingredientsList', l) }} />
+                    <div className="flex items-center gap-1">
+                      <input className={inp} placeholder="5%" value={ing.percentage} onChange={e => { const l = [...form.ingredientsList]; l[ii] = { ...l[ii], percentage: e.target.value }; setF('ingredientsList', l) }} />
+                      <button type="button" onClick={() => setF('ingredientsList', form.ingredientsList.filter((_, i) => i !== ii))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
+                    </div>
                   </div>
                 ))}
+                <button type="button" onClick={() => setF('ingredientsList', [...form.ingredientsList, { name: '', purpose: '', percentage: '' }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 mt-1">
+                  <Plus size={13} /> Add ingredient
+                </button>
               </div>
             </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Product Info</h3>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                {(['crueltyFree', 'vegan', 'paraben', 'waterproof'] as const).map(k => (
+                  <label key={k} className="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={form.productInfo[k]} onChange={e => setNested('productInfo', k, e.target.checked)} className="w-4 h-4 text-blush-500 rounded border-gray-300" />
+                    {k === 'crueltyFree' ? 'Cruelty-Free' : k === 'paraben' ? 'Contains Paraben' : k.charAt(0).toUpperCase() + k.slice(1)}
+                  </label>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={lbl}>Long Lasting</label>
+                  <input className={inp} value={form.productInfo.longLasting} onChange={e => setNested('productInfo', 'longLasting', e.target.value)} placeholder="8+ hours" />
+                </div>
+                <div>
+                  <label className={lbl}>Skin Type (comma separated)</label>
+                  <input className={inp} value={form.productInfo.skinType} onChange={e => setNested('productInfo', 'skinType', e.target.value)} placeholder="All, Oily, Dry, Combination, Sensitive" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: Delivery & FAQs */}
+        {tab === 5 && (
+          <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Delivery Information</h3>
               <div className="space-y-3">
@@ -394,42 +457,42 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                 </div>
                 <div>
                   <label className={lbl}>Free Shipping Threshold (PKR)</label>
-                  <input className={inp} type="number" value={form.deliveryInfo.freeShippingThreshold} onChange={e => setNested('deliveryInfo', 'freeShippingThreshold', e.target.value)} placeholder="5000" />
+                  <input className={inp} type="number" value={form.deliveryInfo.freeShippingThreshold} onChange={e => setNested('deliveryInfo', 'freeShippingThreshold', e.target.value)} placeholder="2500" />
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Tab 5: FAQs */}
-        {tab === 5 && (
-          <div className="space-y-3">
-            {form.faqs.map((faq, fi) => (
-              <div key={fi} className="border border-gray-200 rounded-xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-500">FAQ {fi + 1}</span>
-                  <button type="button" onClick={() => setF('faqs', form.faqs.filter((_, i) => i !== fi))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
-                </div>
-                <div>
-                  <label className={lbl}>Question</label>
-                  <input className={inp} value={faq.question} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], question: e.target.value }; setF('faqs', f) }} />
-                </div>
-                <div>
-                  <label className={lbl}>Answer</label>
-                  <textarea className={`${inp} resize-none`} rows={3} value={faq.answer} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], answer: e.target.value }; setF('faqs', f) }} />
-                </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">FAQs</h3>
+              <div className="space-y-3">
+                {form.faqs.map((faq, fi) => (
+                  <div key={fi} className="border border-gray-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-500">FAQ {fi + 1}</span>
+                      <button type="button" onClick={() => setF('faqs', form.faqs.filter((_, i) => i !== fi))} className="text-red-400 hover:text-red-600"><X size={14} /></button>
+                    </div>
+                    <div>
+                      <label className={lbl}>Question</label>
+                      <input className={inp} value={faq.question} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], question: e.target.value }; setF('faqs', f) }} />
+                    </div>
+                    <div>
+                      <label className={lbl}>Answer</label>
+                      <textarea className={`${inp} resize-none`} rows={3} value={faq.answer} onChange={e => { const f = [...form.faqs]; f[fi] = { ...f[fi], answer: e.target.value }; setF('faqs', f) }} />
+                    </div>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setF('faqs', [...form.faqs, { question: '', answer: '' }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 border border-dashed border-gray-300 hover:border-blush-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
+                  <Plus size={14} /> Add FAQ
+                </button>
               </div>
-            ))}
-            <button type="button" onClick={() => setF('faqs', [...form.faqs, { question: '', answer: '' }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-yellow-600 border border-dashed border-gray-300 hover:border-yellow-400 px-4 py-3 rounded-xl w-full justify-center transition-colors">
-              <Plus size={14} /> Add FAQ
-            </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Footer actions */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center gap-3">
-        <button type="submit" disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-yellow-500 hover:text-gray-900 transition-all disabled:opacity-60">
+        <button type="submit" disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-blush-500 hover:text-white transition-all disabled:opacity-60">
           {saving && <Loader2 size={14} className="animate-spin" />}
           {mode === 'create' ? 'Create Product' : 'Save Changes'}
         </button>
@@ -438,7 +501,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
         </button>
         <div className="ml-auto flex gap-2">
           {TABS.map((t, i) => (
-            <button key={i} type="button" onClick={() => setTab(i)} className={`w-2 h-2 rounded-full transition-colors ${i === tab ? 'bg-yellow-500' : 'bg-gray-300 hover:bg-gray-400'}`} />
+            <button key={i} type="button" onClick={() => setTab(i)} className={`w-2 h-2 rounded-full transition-colors ${i === tab ? 'bg-blush-500' : 'bg-gray-300 hover:bg-gray-400'}`} />
           ))}
         </div>
       </div>
