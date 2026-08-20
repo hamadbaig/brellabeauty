@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, X } from 'lucide-react'
-import { UploadButton } from '@/lib/uploadthing'
+import ImageUploadButton from '@/components/admin/ImageUploadButton'
 
 interface CategoryData {
   name: string
@@ -110,8 +110,8 @@ export default function CategoryForm({ initial, mode }: Props) {
 
       <div>
         <label className={labelCls}>Image</label>
-        {form.image ? (
-          <div className="relative inline-block mt-1">
+        {form.image && (
+          <div className="relative inline-block mt-1 mb-3">
             <img src={form.image} alt="preview" className="h-24 w-40 object-cover rounded-lg border border-gray-200" />
             <button
               type="button"
@@ -122,17 +122,12 @@ export default function CategoryForm({ initial, mode }: Props) {
               <X size={14} />
             </button>
           </div>
-        ) : (
-          <UploadButton
-            endpoint="imageUploader"
-            onClientUploadComplete={res => { if (res[0]) set('image', res[0].ufsUrl) }}
-            onUploadError={err => alert(`Upload failed: ${err.message}`)}
-            appearance={{
-              button: 'bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ut-uploading:opacity-60',
-              allowedContent: 'text-gray-400 text-xs mt-1',
-            }}
-          />
         )}
+        <ImageUploadButton
+          label={form.image ? 'Replace Image' : 'Choose Image'}
+          className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
+          onUploaded={(urls) => set('image', urls[0])}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

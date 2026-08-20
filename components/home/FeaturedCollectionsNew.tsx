@@ -36,7 +36,11 @@ export default function FeaturedCollections({ collections }: any) {
         },
     }
 
-    const sortedCollections = (collections || []).sort((a: any, b: any) => a.order - b.order)
+    const sortedCollections = (collections || [])
+        .filter((c: any) => c.isActive !== false)
+        .sort((a: any, b: any) => a.order - b.order)
+
+    if (!sortedCollections.length) return null
 
     return (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-pearl">

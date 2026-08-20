@@ -28,6 +28,39 @@ const TestimonialSchema = new Schema({
   text: { type: String, required: true },
   image: { type: String, required: true },
   rating: { type: Number, default: 5, min: 1, max: 5 },
+  // Real customer testimonials are prioritized over placeholder/dummy ones on the storefront.
+  isOriginal: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true },
+  order: { type: Number, default: 0 },
+}, { _id: false })
+
+const BrandStorySchema = new Schema({
+  badge: { type: String, default: 'Our Story' },
+  heading: { type: String, default: 'Crafted With Passion & Purpose' },
+  body: { type: String, default: 'Every Brella Beauty product begins with a simple belief: beauty should be elegant, ethical, and effortless. From our first lip gloss to our full skincare line, we pour craftsmanship and care into every drop.' },
+  image: { type: String, default: '' },
+  ctaText: { type: String, default: 'Discover Our Journey' },
+  ctaLink: { type: String, default: '/shop' },
+  isActive: { type: Boolean, default: true },
+}, { _id: false })
+
+const WhyUsStatSchema = new Schema({
+  id: { type: String, required: true },
+  label: { type: String, required: true },
+  value: { type: String, required: true },
+  icon: { type: String, default: 'Sparkles' },
+  order: { type: Number, default: 0 },
+}, { _id: false })
+
+const WhyUsSchema = new Schema({
+  heading: { type: String, default: 'The Brella Beauty Difference' },
+  subheading: { type: String, default: 'Numbers that reflect our commitment to you' },
+  stats: [WhyUsStatSchema],
+  isActive: { type: Boolean, default: true },
+}, { _id: false })
+
+const SectionConfigSchema = new Schema({
+  key: { type: String, required: true },
   isActive: { type: Boolean, default: true },
   order: { type: Number, default: 0 },
 }, { _id: false })
@@ -63,11 +96,21 @@ const HomepageContentSchema = new Schema({
   featuredCollections: [FeaturedCollectionSchema],
   features: [FeatureSchema],
   testimonials: [TestimonialSchema],
+  brandStory: {
+    type: BrandStorySchema,
+    default: {},
+  },
+  whyUs: {
+    type: WhyUsSchema,
+    default: {},
+  },
   cta: {
     type: CTASectionSchema,
     default: {},
   },
   marqueeText: { type: String, default: 'Luxury Beauty • Cruelty Free • Handcrafted •' },
+  // Controls which homepage sections are shown and in what order.
+  sections: [SectionConfigSchema],
   isPublished: { type: Boolean, default: true },
 }, { timestamps: true, versionKey: false })
 

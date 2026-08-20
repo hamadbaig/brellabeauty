@@ -33,7 +33,11 @@ export default function FeaturesSection({ features }: any) {
         },
     }
 
-    const sortedFeatures = (features || []).sort((a: any, b: any) => a.order - b.order)
+    const sortedFeatures = (features || [])
+        .filter((f: any) => f.isActive !== false)
+        .sort((a: any, b: any) => a.order - b.order)
+
+    if (!sortedFeatures.length) return null
 
     return (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">

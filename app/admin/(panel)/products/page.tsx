@@ -13,14 +13,14 @@ interface Product {
 }
 
 export default function AdminProductsPage() {
-  const [products, setProducts]   = useState<Product[]>([])
-  const [loading, setLoading]     = useState(true)
-  const [query, setQuery]         = useState('')
-  const [deleting, setDeleting]   = useState<string | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   const load = () => {
     setLoading(true)
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => { setProducts(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))

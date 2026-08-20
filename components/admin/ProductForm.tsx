@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, X } from 'lucide-react'
-import { UploadButton } from '@/lib/uploadthing'
+import ImageUploadButton from '@/components/admin/ImageUploadButton'
 
 interface ShadeEntry { name: string; hex: string; images: string[] }
 interface SizeEntry { label: string; price: number | ''; originalPrice: number | ''; available: boolean }
@@ -23,9 +23,9 @@ interface FormData {
 }
 
 const DEFAULT_SIZES: SizeEntry[] = [
+  { label: '15ml', price: '', originalPrice: '', available: true },
   { label: '30ml', price: '', originalPrice: '', available: true },
   { label: '50ml', price: '', originalPrice: '', available: true },
-  { label: '100ml', price: '', originalPrice: '', available: true },
 ]
 
 function toSlug(s: string) {
@@ -84,7 +84,7 @@ interface Props {
   categories?: { name: string; slug: string }[]
 }
 
-const TABS = ['Basic', 'Shades', 'Sizes', 'Description', 'Ingredients & Info', 'Delivery & FAQs']
+const TABS = ['Basic', 'Shades', 'Quantity', 'Description', 'Ingredients & Info', 'Delivery & FAQs']
 
 export default function ProductForm({ initial, mode, categories = [] }: Props) {
   const router = useRouter()
@@ -327,18 +327,14 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
                       </div>
                     ))}
                   </div>
-                  <UploadButton
-                    endpoint="imageUploader"
-                    onClientUploadComplete={res => {
+                  <ImageUploadButton
+                    multiple
+                    label="Add Images"
+                    className="bg-blush-500 hover:bg-blush-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+                    onUploaded={(newUrls) => {
                       const c = [...form.colors]
-                      const newUrls = res.map(r => r.ufsUrl)
                       c[ci].images = [...c[ci].images.filter(Boolean), ...newUrls]
                       setF('colors', c)
-                    }}
-                    onUploadError={err => alert(`Upload failed: ${err.message}`)}
-                    appearance={{
-                      button: 'bg-blush-500 hover:bg-blush-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ut-uploading:opacity-60',
-                      allowedContent: 'text-gray-400 text-xs mt-1',
                     }}
                   />
                 </div>
@@ -350,16 +346,16 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
           </div>
         )}
 
-        {/* Tab 2: Sizes (bottle/pack size, each with its own price) */}
+        {/* Tab 2: Quantity (e.g. 15ml/30ml), each with its own price */}
         {tab === 2 && (
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 mb-2">Set a price per bottle/pack size. Leave price blank to fall back to the base price above.</p>
+            <p className="text-xs text-gray-500 mb-2">Set a price per quantity (e.g. 15ml, 30ml). Leave price blank to fall back to the base price above.</p>
             <div className="grid grid-cols-5 gap-2 text-xs font-medium text-gray-500 px-3 mb-1">
-              <div>Size (e.g. 30ml)</div><div>Price (PKR)</div><div>Original Price</div><div>Available</div><div></div>
+              <div>Quantity (e.g. 15ml)</div><div>Price (PKR)</div><div>Original Price</div><div>Available</div><div></div>
             </div>
             {form.sizes.map((size, si) => (
               <div key={si} className="grid grid-cols-5 gap-2 items-center bg-gray-50 rounded-lg px-3 py-2">
-                <input className={`${inp} font-medium`} value={size.label} placeholder="30ml" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
+                <input className={`${inp} font-medium`} value={size.label} placeholder="15ml" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], label: e.target.value }; setF('sizes', s) }} />
                 <input className={inp} type="number" value={size.price} placeholder="Base price" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], price: e.target.value === '' ? '' : Number(e.target.value) }; setF('sizes', s) }} />
                 <input className={inp} type="number" value={size.originalPrice} placeholder="Optional" onChange={e => { const s = [...form.sizes]; s[si] = { ...s[si], originalPrice: e.target.value === '' ? '' : Number(e.target.value) }; setF('sizes', s) }} />
                 <div className="flex justify-center">
@@ -371,7 +367,7 @@ export default function ProductForm({ initial, mode, categories = [] }: Props) {
               </div>
             ))}
             <button type="button" onClick={() => setF('sizes', [...form.sizes, { label: '', price: '', originalPrice: '', available: true }])} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blush-600 mt-2">
-              <Plus size={13} /> Add size
+              <Plus size={13} /> Add quantity
             </button>
           </div>
         )}

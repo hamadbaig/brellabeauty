@@ -24,7 +24,14 @@ export default function TestimonialsSection({ testimonials }: any) {
         },
     }
 
-    const sortedTestimonials = (testimonials || []).sort((a: any, b: any) => a.order - b.order)
+    const activeTestimonials = (testimonials || []).filter((t: any) => t.isActive !== false)
+    const originalTestimonials = activeTestimonials.filter((t: any) => t.isOriginal)
+    // Real customer testimonials take priority; dummy ones only fill in when there are no real ones yet.
+    const sortedTestimonials = (originalTestimonials.length > 0 ? originalTestimonials : activeTestimonials)
+        .slice()
+        .sort((a: any, b: any) => a.order - b.order)
+
+    if (!sortedTestimonials.length) return null
 
     return (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-pearl to-white">

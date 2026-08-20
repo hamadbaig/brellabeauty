@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Check, Truck, ShieldCheck, Leaf, Droplet, ChevronDown, ChevronUp } from 'lucide-react'
-import { Product } from '@/types/product'
+import { Check, Truck, ShieldCheck, Leaf, Droplet, ChevronDown, ChevronUp, Star } from 'lucide-react'
+import { Product, ProductReview } from '@/types/product'
 import { buildProductWhatsAppLink } from '@/lib/whatsapp'
 
 interface Props {
@@ -25,6 +25,44 @@ export default function ProductDetail({ product }: Props) {
     const [imgIndex, setImgIndex] = useState(0)
     const [descTab, setDescTab] = useState<(typeof DESCRIPTION_TABS)[number]['key']>('overview')
     const [openFaq, setOpenFaq] = useState<number | null>(null)
+    const [reviews, setReviews] = useState<ProductReview[]>(product.reviews || [])
+    const [averageRating, setAverageRating] = useState(product.averageRating)
+    const [totalReviews, setTotalReviews] = useState(product.totalReviews)
+    const [showReviewForm, setShowReviewForm] = useState(false)
+    const [reviewForm, setReviewForm] = useState({ author: '', location: '', title: '', comment: '', rating: 5 })
+    const [reviewSubmitting, setReviewSubmitting] = useState(false)
+    const [reviewError, setReviewError] = useState('')
+    const [reviewSuccess, setReviewSuccess] = useState(false)
+
+    const handleReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setReviewError('')
+        if (!reviewForm.author.trim() || !reviewForm.comment.trim()) {
+            setReviewError('Please add your name and a comment.')
+            return
+        }
+        setReviewSubmitting(true)
+        try {
+            const res = await fetch(`/api/products/${product.id}/reviews`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reviewForm),
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || 'Failed to submit review')
+
+            setReviews(prev => [data.review, ...prev])
+            setAverageRating(data.averageRating)
+            setTotalReviews(data.totalReviews)
+            setReviewForm({ author: '', location: '', title: '', comment: '', rating: 5 })
+            setReviewSuccess(true)
+            setShowReviewForm(false)
+        } catch (err: any) {
+            setReviewError(err.message || 'Something went wrong')
+        } finally {
+            setReviewSubmitting(false)
+        }
+    }
 
     const shade = product.colors[shadeIndex]
     const images = shade?.images?.length ? shade.images : product.colors[0]?.images ?? []
@@ -85,10 +123,10 @@ export default function ProductDetail({ product }: Props) {
                 <p className="label-blush mb-2">{product.collection}</p>
                 <h1 className="font-serif text-3xl sm:text-4xl text-mauve-950 mb-3">{product.name}</h1>
 
-                {product.averageRating > 0 && (
+                {averageRating > 0 && (
                     <div className="flex items-center gap-2 mb-4">
-                        <span className="text-blush text-sm">{'★'.repeat(Math.round(product.averageRating))}</span>
-                        <span className="text-sm text-mauve-500">{product.averageRating.toFixed(1)} ({product.totalReviews} reviews)</span>
+                        <span className="text-blush text-sm">{'★'.repeat(Math.round(averageRating))}</span>
+                        <span className="text-sm text-mauve-500">{averageRating.toFixed(1)} ({totalReviews} reviews)</span>
                     </div>
                 )}
 
@@ -120,10 +158,10 @@ export default function ProductDetail({ product }: Props) {
                     </div>
                 )}
 
-                {/* Sizes */}
+                {/* Quantity (ml) */}
                 {product.sizes && product.sizes.length > 0 && (
                     <div className="mb-6">
-                        <h3 className="text-sm font-sans font-medium text-mauve-700 mb-2">Size</h3>
+                        <h3 className="text-sm font-sans font-medium text-mauve-700 mb-2">Quantity</h3>
                         <div className="flex gap-2 flex-wrap">
                             {product.sizes.map(s => (
                                 <button
@@ -254,25 +292,113 @@ export default function ProductDetail({ product }: Props) {
                 )}
 
                 {/* Reviews */}
-                {product.reviews?.length > 0 && (
-                    <div className="mt-12">
-                        <h3 className="font-serif text-xl text-mauve-950 mb-4">Customer Reviews</h3>
+                <div className="mt-12">
+                    <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                        <h3 className="font-serif text-xl text-mauve-950">Customer Reviews</h3>
+                        <button
+                            type="button"
+                            onClick={() => { setShowReviewForm(v => !v); setReviewSuccess(false) }}
+                            className="text-sm font-sans font-medium px-4 py-2 border border-blush text-blush rounded-lg hover:bg-blush hover:text-white transition-colors"
+                        >
+                            {showReviewForm ? 'Cancel' : 'Write a Review'}
+                        </button>
+                    </div>
+
+                    {reviewSuccess && (
+                        <p className="text-sm text-green-600 mb-4">Thanks! Your review has been posted.</p>
+                    )}
+
+                    {showReviewForm && (
+                        <form onSubmit={handleReviewSubmit} className="card-beauty p-6 mb-8 max-w-3xl space-y-4">
+                            <div>
+                                <label className="block text-sm font-sans font-medium text-mauve-700 mb-2">Your Rating</label>
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map(n => (
+                                        <button
+                                            key={n}
+                                            type="button"
+                                            onClick={() => setReviewForm(f => ({ ...f, rating: n }))}
+                                            aria-label={`${n} star`}
+                                        >
+                                            <Star
+                                                size={22}
+                                                className={n <= reviewForm.rating ? 'fill-blush text-blush' : 'text-mauve-200'}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-sans font-medium text-mauve-700 mb-2">Name *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={reviewForm.author}
+                                        onChange={e => setReviewForm(f => ({ ...f, author: e.target.value }))}
+                                        className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-sans font-medium text-mauve-700 mb-2">Location</label>
+                                    <input
+                                        type="text"
+                                        value={reviewForm.location}
+                                        onChange={e => setReviewForm(f => ({ ...f, location: e.target.value }))}
+                                        className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-sans font-medium text-mauve-700 mb-2">Title</label>
+                                <input
+                                    type="text"
+                                    value={reviewForm.title}
+                                    onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))}
+                                    className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-sans font-medium text-mauve-700 mb-2">Review *</label>
+                                <textarea
+                                    required
+                                    rows={4}
+                                    value={reviewForm.comment}
+                                    onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))}
+                                    className="w-full px-4 py-2 border border-mauve-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blush"
+                                />
+                            </div>
+                            {reviewError && <p className="text-sm text-red-500">{reviewError}</p>}
+                            <button
+                                type="submit"
+                                disabled={reviewSubmitting}
+                                className="btn-primary px-6 py-2.5 disabled:opacity-50"
+                            >
+                                {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+                            </button>
+                        </form>
+                    )}
+
+                    {reviews.length > 0 ? (
                         <div className="space-y-4 max-w-3xl">
-                            {product.reviews.map(r => (
+                            {reviews.map(r => (
                                 <div key={r.id} className="border-b border-mauve-100 pb-4">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-blush text-xs">{'★'.repeat(r.rating)}</span>
                                         <span className="text-sm font-medium text-mauve-900">{r.author}</span>
                                         {r.verified && <span className="text-[10px] text-green-600 font-sans">Verified</span>}
-                                        <span className="text-xs text-mauve-400 ml-auto">{r.location}</span>
+                                        {r.location && <span className="text-xs text-mauve-400 ml-auto">{r.location}</span>}
                                     </div>
                                     {r.title && <p className="text-sm font-medium text-mauve-800 mb-1">{r.title}</p>}
                                     <p className="text-sm text-mauve-600">{r.comment}</p>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        !showReviewForm && <p className="text-sm text-mauve-500">No reviews yet. Be the first to share your feedback!</p>
+                    )}
+                </div>
+
             </div>
         </div>
     )
